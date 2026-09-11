@@ -6,6 +6,8 @@ package com.mycompany.proyecto1s2.views;
 
 import com.mycompany.proyecto1s2.controller.UsuarioController;
 import com.mycompany.proyecto1s2.models.Usuario;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JOptionPane;
 
 /**
@@ -138,6 +140,22 @@ public class Registrar extends javax.swing.JFrame {
             }
             UsuarioController u = new UsuarioController();
             Usuario nuevoUsuario = new Usuario();
+            
+            nuevoUsuario.setCodigo(codigo);
+            nuevoUsuario.setPassword(password);
+            nuevoUsuario.setRol(rol);
+            nuevoUsuario.setUsuario(usuario);
+            
+            if(u.registrarUsuario(nuevoUsuario)){
+                JOptionPane.showMessageDialog(this,"Usuario creado exitosamente");
+                Login l= new Login();
+                this.setVisible(false);
+                l.setVisible(true);
+            }else{
+                JOptionPane.showMessageDialog(this, "No se pudo crear el usuario");
+            }
+            
+            
             
         }
     }//GEN-LAST:event_btnRegistrarActionPerformed

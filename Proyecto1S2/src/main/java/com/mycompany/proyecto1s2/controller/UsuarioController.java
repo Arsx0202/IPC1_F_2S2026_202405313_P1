@@ -1,7 +1,9 @@
 
 package com.mycompany.proyecto1s2.controller;
 
+import com.mycompany.proyecto1s2.Reporte.ReporteHTML;
 import com.mycompany.proyecto1s2.models.Usuario;
+import com.mycompany.proyecto1s2.persistencia.persistencia;
 
 /**
  *
@@ -9,8 +11,8 @@ import com.mycompany.proyecto1s2.models.Usuario;
  */
 public class UsuarioController {
     
-    public static Usuario[] usuarios = new Usuario[100];
-    
+    //public static Usuario[] usuarios = new Usuario[100];
+    public static Usuario[] usuarios = persistencia.cargar();
     public static Usuario login(String usuario, String password){
         if(usuarios == null || usuario == null || password == null){
             return null;
@@ -40,7 +42,10 @@ public class UsuarioController {
         if (usuarios == null || usuario == null){
           return false;
         }
-        if(usuario.getUsuario() != null){
+        if(usuario.getUsuario() != null || usuario.getUsuario().trim().isEmpty()){
+            return false;
+        }
+        if (usuario.getPassword() == null || usuario.getPassword().trim().isEmpty()){
             return false;
         }
         if (buscarPorUsuario(usuario.getUsuario()) != null){
@@ -49,6 +54,7 @@ public class UsuarioController {
         for(int i=0; i<usuarios.length; i++){
         if(usuarios[i] == null){
             usuarios[i] = usuario;
+            persistencia.guardar(usuarios);
             return true;
         }
         
@@ -68,6 +74,9 @@ public class UsuarioController {
             }
         }
         return null;
+    }
+    public boolean generarReporteHTML(String ruta){
+        return ReporteHTML.generarReporteUsuarios(usuarios, ruta);
     }
     
 }
