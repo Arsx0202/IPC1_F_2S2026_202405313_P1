@@ -4,6 +4,8 @@
  */
 package com.mycompany.proyecto1s2.views;
 
+import com.mycompany.proyecto1s2.controller.UsuarioController;
+import com.mycompany.proyecto1s2.models.Usuario;
 import javax.swing.JOptionPane;
 
 /**
@@ -44,6 +46,7 @@ public class Registrar extends javax.swing.JFrame {
         jLabel1.setText("Registrate");
 
         btnRegresar.setText("Regresar");
+        btnRegresar.addActionListener(this::btnRegresarActionPerformed);
 
         jLabel2.setText("Usuario");
 
@@ -130,9 +133,21 @@ public class Registrar extends javax.swing.JFrame {
             
             if (usuario.isEmpty() || password.isEmpty()){
                 JOptionPane.showMessageDialog(this, "Por favor, llene los campos solicitados");
+                return;
+                
             }
+            UsuarioController u = new UsuarioController();
+            Usuario nuevoUsuario = new Usuario();
+            
         }
     }//GEN-LAST:event_btnRegistrarActionPerformed
+
+    private void btnRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegresarActionPerformed
+        // TODO add your handling code here:
+        Login l= new Login();
+        this.setVisible(false);
+        l.setVisible(true);
+    }//GEN-LAST:event_btnRegresarActionPerformed
 
     /**
      * @param args the command line arguments
