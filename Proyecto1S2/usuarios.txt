@@ -3,3 +3,4 @@
 3,Rojo,1234,Admin
 4,Demos,12345,Admin
 5,Usuario,1234,Auxiliar
+6,Julio,12345,Admin

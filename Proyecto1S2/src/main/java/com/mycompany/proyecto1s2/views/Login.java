@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 public class Login extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Login.class.getName());
-    private UsuarioController controller;
+    private UsuarioController controller = new UsuarioController();
 
     /**
      * Creates new form Login
@@ -135,12 +135,13 @@ public class Login extends javax.swing.JFrame {
            JOptionPane.showMessageDialog(this, "Bienvenido "+ usuarioLogueado.getUsuario());
            this.setVisible(false);
               if("Admin".equalsIgnoreCase(usuarioLogueado.getRol())){
-           
+                  Admin ad = new Admin();
+                  ad.setVisible(true);
        }
        if("Auxiliar".equalsIgnoreCase(usuarioLogueado.getRol())){
            
        }else{
-           //
+           
        }
        
      }

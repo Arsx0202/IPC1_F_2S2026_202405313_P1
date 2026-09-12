@@ -5,12 +5,31 @@ package com.mycompany.proyecto1s2.models;
  *
  * @author celad
  */
-public class animal {
+public class Animal {
     private int codigo;
     private String nombre;
     private String especie;
     private String estado;
+    private boolean activo;
 
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+    
+    
+    public Animal(int codigo, String nombre, String especie, String estado) {
+        this.codigo = codigo;
+        this.nombre = nombre;
+        this.especie = especie;
+        this.estado = estado;
+        this.activo = true;
+    }
+    
+    
     public int getCodigo() {
         return codigo;
     }
