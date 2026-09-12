@@ -1,7 +1,7 @@
 
 package com.mycompany.proyecto1s2;
 
-import com.mycompany.proyecto1s2.views.Login;
+import com.mycompany.proyecto1s2.views.Menu;
 
 /**
  *
@@ -11,7 +11,7 @@ public class Proyecto1S2 {
 
     public static void main(String[] args) {
         
-         Login login = new Login();
+         Menu login = new Menu();
          login.setVisible(true);
          
     }

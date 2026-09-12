@@ -1,13 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
+
 package com.mycompany.proyecto1s2.views;
 
 import com.mycompany.proyecto1s2.controller.UsuarioController;
 import com.mycompany.proyecto1s2.models.Usuario;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.JOptionPane;
 
 /**
@@ -17,13 +12,16 @@ import javax.swing.JOptionPane;
 public class Registrar extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Registrar.class.getName());
-
+    
+    private UsuarioController controller;
     /**
      * Creates new form Registrar
      */
     public Registrar() {
         initComponents();
+        this.controller = new UsuarioController();
     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -42,6 +40,8 @@ public class Registrar extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         txtPassword = new javax.swing.JTextField();
         btnRegistrar = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        cbRol = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -61,20 +61,17 @@ public class Registrar extends javax.swing.JFrame {
         btnRegistrar.setText("Registrar");
         btnRegistrar.addActionListener(this::btnRegistrarActionPerformed);
 
+        jLabel4.setText("Rol");
+
+        cbRol.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "Auxiliar" }));
+        cbRol.addActionListener(this::cbRolActionPerformed);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel2)
-                    .addComponent(txtUsuario)
-                    .addComponent(jLabel3)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
-                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(314, Short.MAX_VALUE)
+                .addContainerGap(316, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnRegistrar)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -84,6 +81,17 @@ public class Registrar extends javax.swing.JFrame {
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                             .addComponent(btnRegresar)
                             .addGap(29, 29, 29)))))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbRol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel2)
+                        .addComponent(txtUsuario)
+                        .addComponent(jLabel3)
+                        .addComponent(txtPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -98,7 +106,11 @@ public class Registrar extends javax.swing.JFrame {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 98, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
+                .addComponent(jLabel4)
+                .addGap(18, 18, 18)
+                .addComponent(cbRol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(19, 19, 19)
                 .addComponent(btnRegistrar)
                 .addGap(27, 27, 27)
                 .addComponent(btnRegresar)
@@ -132,23 +144,24 @@ public class Registrar extends javax.swing.JFrame {
         if(!this.txtPassword.equals("") && !this.txtUsuario.equals("")){
             String usuario = this.txtUsuario.getText();
             String password = this.txtPassword.getText();
+            String rol = (String)cbRol.getSelectedItem();
             
             if (usuario.isEmpty() || password.isEmpty()){
                 JOptionPane.showMessageDialog(this, "Por favor, llene los campos solicitados");
                 return;
                 
             }
-            UsuarioController u = new UsuarioController();
-            Usuario nuevoUsuario = new Usuario();
             
+            int codigo = controller.generarNuevoCodigo();
+            Usuario nuevoUsuario = new Usuario();
             nuevoUsuario.setCodigo(codigo);
             nuevoUsuario.setPassword(password);
             nuevoUsuario.setRol(rol);
             nuevoUsuario.setUsuario(usuario);
             
-            if(u.registrarUsuario(nuevoUsuario)){
-                JOptionPane.showMessageDialog(this,"Usuario creado exitosamente");
-                Login l= new Login();
+            if(controller.registrarUsuario(nuevoUsuario)){
+                JOptionPane.showMessageDialog(this,"Usuario creado exitosamente con ID: " + codigo);
+                Menu l= new Menu();
                 this.setVisible(false);
                 l.setVisible(true);
             }else{
@@ -162,10 +175,14 @@ public class Registrar extends javax.swing.JFrame {
 
     private void btnRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegresarActionPerformed
         // TODO add your handling code here:
-        Login l= new Login();
+        Menu l= new Menu();
         this.setVisible(false);
         l.setVisible(true);
     }//GEN-LAST:event_btnRegresarActionPerformed
+
+    private void cbRolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbRolActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbRolActionPerformed
 
     /**
      * @param args the command line arguments
@@ -195,9 +212,11 @@ public class Registrar extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnRegistrar;
     private javax.swing.JButton btnRegresar;
+    private javax.swing.JComboBox<String> cbRol;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField txtPassword;
     private javax.swing.JTextField txtUsuario;

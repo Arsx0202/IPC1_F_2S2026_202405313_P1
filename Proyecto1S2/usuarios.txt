@@ -1,0 +1,5 @@
+1,admin,admin123,ADMINISTRADOR
+2,auxiliar,aux123,AUXILIAR
+3,Rojo,1234,Admin
+4,Demos,12345,Admin
+5,Usuario,1234,Auxiliar
