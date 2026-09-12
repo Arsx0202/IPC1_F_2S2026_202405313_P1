@@ -1,6 +1,10 @@
 
 package com.mycompany.proyecto1s2.views;
 
+import com.mycompany.proyecto1s2.controller.UsuarioController;
+import com.mycompany.proyecto1s2.models.Usuario;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author celad
@@ -8,6 +12,7 @@ package com.mycompany.proyecto1s2.views;
 public class Login extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Login.class.getName());
+    private UsuarioController controller;
 
     /**
      * Creates new form Login
@@ -117,6 +122,29 @@ public class Login extends javax.swing.JFrame {
 
     private void btnIngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIngresarActionPerformed
         // TODO add your handling code here:
+        String usuario = txtUsuario.getText().trim();
+        String password = txtPassword.getText().trim();
+        
+        if(usuario.isEmpty() || password.isEmpty()){
+            JOptionPane.showMessageDialog(this, " Por favor ingrese su Usuario y Contraseña");
+            return;
+        }
+       Usuario usuarioLogueado = controller.autenticar(usuario, password);
+       
+       if(usuarioLogueado != null){
+           JOptionPane.showMessageDialog(this, "Bienvenido "+ usuarioLogueado.getUsuario());
+           this.setVisible(false);
+              if("Admin".equalsIgnoreCase(usuarioLogueado.getRol())){
+           
+       }
+       if("Auxiliar".equalsIgnoreCase(usuarioLogueado.getRol())){
+           
+       }else{
+           //
+       }
+       
+     }
+    
     }//GEN-LAST:event_btnIngresarActionPerformed
 
     /**

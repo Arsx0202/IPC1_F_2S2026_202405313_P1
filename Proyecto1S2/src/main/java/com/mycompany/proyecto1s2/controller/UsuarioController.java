@@ -45,8 +45,7 @@ public class UsuarioController {
     }
     public boolean registrarUsuario(Usuario nuevoUsuario) {
         
-        if (nuevoUsuario == null || 
-          nuevoUsuario.getUsuario() == null || nuevoUsuario.getUsuario().trim().isEmpty() ||
+        if (nuevoUsuario == null || nuevoUsuario.getUsuario() == null || nuevoUsuario.getUsuario().trim().isEmpty() ||
             nuevoUsuario.getPassword() == null || nuevoUsuario.getPassword().trim().isEmpty() ||
             nuevoUsuario.getRol() == null || nuevoUsuario.getRol().trim().isEmpty()) {
             return false;
