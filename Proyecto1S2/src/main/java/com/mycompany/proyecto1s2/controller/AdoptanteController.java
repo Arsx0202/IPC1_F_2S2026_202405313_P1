@@ -59,4 +59,7 @@ public class AdoptanteController {
         return listaAdoptantes;
     }
     
+    public int getContador(){
+        return contador;
+}    
 }

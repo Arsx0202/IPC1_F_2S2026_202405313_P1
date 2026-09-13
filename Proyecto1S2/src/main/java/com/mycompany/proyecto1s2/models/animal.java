@@ -11,6 +11,15 @@ public class Animal {
     private String especie;
     private String estado;
     private boolean activo;
+    private int celda;
+
+    public int getCelda() {
+        return celda;
+    }
+
+    public void setCelda(int celda) {
+        this.celda = celda;
+    }
 
     public boolean isActivo() {
         return activo;
@@ -21,12 +30,13 @@ public class Animal {
     }
     
     
-    public Animal(int codigo, String nombre, String especie, String estado) {
+    public Animal(int codigo, String nombre, String especie, String estado,int celda) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.especie = especie;
         this.estado = estado;
         this.activo = true;
+        this.celda = celda;
     }
     
     

@@ -17,7 +17,7 @@ public class AnimalController {
     }
 
 
-    public boolean agregar(int codigo, String nombre, String especie, String estado) {
+    public boolean agregar(int codigo, String nombre, String especie, String estado, int celda) {
 
         if (buscar(codigo) != null){
             return false;
@@ -30,7 +30,7 @@ public class AnimalController {
             return false;
         }
 
-        listaAnimales[contador] = new Animal(codigo, nombre, especie, estado);
+        listaAnimales[contador] = new Animal(codigo, nombre, especie, estado, celda);
         contador++;
         return true;
     }
@@ -74,5 +74,52 @@ public class AnimalController {
     public int getContador(){
         return contador;
     }
+    public boolean cambiarEstadoAnimal(String codigoStr, String nuevoEstado) {
+        if (codigoStr == null || codigoStr.trim().isEmpty()){
+        System.out.println("Error: El código recibido está vacío o es nulo.");
+        return false;
+        }try{
+            String soloNumeros = codigoStr.replaceAll("[^0-9]", "");
+
+            if (soloNumeros.isEmpty()) {
+                System.out.println("Error: No se encontraron dígitos numéricos en: " + codigoStr);
+                return false;
+            }
+
+        int codigoInt = Integer.parseInt(soloNumeros);
+
+        Animal a = buscar(codigoInt);
+        if(a != null){
+            a.setEstado(nuevoEstado);
+            return true;
+        }else{
+            System.out.println("Error: No se encontró ningún animal activo con el código " + codigoInt);
+        }
+        
+        }catch(NumberFormatException e){
+        System.out.println("Error al parsear el número: " + e.getMessage());
+        }
+        return false;
+    }
+    public Animal obtenerAnimalEnCelda(int numeroCelda) {
+        for (int i = 0; i < contador; i++){
+            Animal a = listaAnimales[i];
+            if (a != null && a.isActivo() && a.getCelda() == numeroCelda && a.getEstado().equalsIgnoreCase("Disponible")){
+                return a; 
+            }
+        }
+    return null;
+    }
+    public boolean agregar(int codigo, String nombre, String especie, String estado) {
+    return agregar(codigo, nombre, especie, estado, 0);
+}
+    public void autoAsignarCeldas() {
+    for (int i = 0; i < contador; i++) {
+        if (listaAnimales[i] != null) {
+            listaAnimales[i].setCelda(i + 1);
+        }
+    }
+}
+    
 }
 

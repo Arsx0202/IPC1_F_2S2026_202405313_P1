@@ -3,8 +3,11 @@ package com.mycompany.proyecto1s2.views;
 
 import com.mycompany.proyecto1s2.controller.AdoptanteController;
 import com.mycompany.proyecto1s2.controller.AnimalController;
+import com.mycompany.proyecto1s2.controller.SolicitudController;
+import com.mycompany.proyecto1s2.controller.UsuarioController;
 import com.mycompany.proyecto1s2.models.Animal;
 import com.mycompany.proyecto1s2.models.Adoptante;
+import com.mycompany.proyecto1s2.models.Solicitud;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -17,7 +20,9 @@ public class Admin extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Admin.class.getName());
     private final AnimalController controlador = new AnimalController();
+    private final UsuarioController controladorUsaurio = new UsuarioController();
     private final AdoptanteController controladorAdoptante = new AdoptanteController();
+    private final SolicitudController controladorSolicitud = new SolicitudController();
     /**
      * Creates new form Admin
      */
@@ -25,9 +30,118 @@ public class Admin extends javax.swing.JFrame {
         initComponents();
         componentesPersonalizados();
         componentesAdoptantes();
+        cargarCombosSolicitud();
+        actualizarTablaSolicitudes();
+        controlador.autoAsignarCeldas();
+        renderizarMapaCeldas();
         
+        jTabbedPane2.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            int index = jTabbedPane2.getSelectedIndex();
+
+            switch (index) {
+                case 0:
+                    actualizarTabla();
+                    break;
+                case 3:
+                    renderizarMapaCeldas(); 
+                    System.out.println("Ejecutando renderizarMapaCeldas...");
+                    break;
+                case 4:
+                    cargarCombosSolicitud(); 
+                    actualizarTablaSolicitudes();
+                break;
+                default:
+                break;
+        }
     }
-    private void componentesAdoptantes() {
+});
+
+    }
+    public void renderizarMapaCeldas() {
+        pnlMapaCeldas.removeAll();
+        int totalCeldas = 20;
+    
+        pnlMapaCeldas.setLayout(new java.awt.GridLayout(4, 5, 10, 10));
+
+        for (int i = 1; i <= totalCeldas; i++) {
+            javax.swing.JButton btnCelda = new javax.swing.JButton();
+            Animal animal = controlador.obtenerAnimalEnCelda(i);
+
+            if (animal != null) {
+           
+                btnCelda.setText("<html><center>Celda " + i + "<br>[" + animal.getNombre() + "]</center></html>");
+                btnCelda.setBackground(new java.awt.Color(230, 81, 0));
+               btnCelda.setForeground(java.awt.Color.WHITE);
+                btnCelda.setToolTipText("Especie: " + animal.getEspecie() + " | Código: " + animal.getCodigo());
+            } else {
+                btnCelda.setText("<html><center>Celda " + i + "<br>(VACÍA)</center></html>");
+                btnCelda.setBackground(new java.awt.Color(76, 175, 80)); 
+                btnCelda.setForeground(java.awt.Color.WHITE);
+                btnCelda.setToolTipText("Celda disponible para asignación");
+            }
+
+            btnCelda.setFocusable(false);
+            pnlMapaCeldas.add(btnCelda);
+        }
+
+    
+        pnlMapaCeldas.revalidate();
+        pnlMapaCeldas.repaint();
+    }
+    
+    
+    
+   public void actualizarTablaSolicitudes(){
+    DefaultTableModel modelo = (DefaultTableModel) jTable3.getModel();
+    
+    modelo.setRowCount(0);
+
+    Solicitud[] lista = controladorSolicitud.getSolicitudes();
+    int total = controladorSolicitud.getContador();
+
+    for(int i = 0; i < total; i++){
+        Solicitud s = lista[i];
+        if(s != null){
+            modelo.addRow(new Object[]{
+                s.getId(),
+                s.getDpiAdoptante(),
+                s.getCodigoAnimal(),
+                s.getFecha(),
+                s.getEstado()
+            });
+        }
+    }
+}
+    public void cargarCombosSolicitud(){
+        cbAdoptanteSoli.removeAllItems();
+        cbAnimalSoli.removeAllItems();
+        
+        Adoptante[] listaAdoptantes = controladorAdoptante.getListaAdoptantes();
+        int totalAdoptantes = controladorAdoptante.getContador();
+        for (int i = 0; i < totalAdoptantes; i++){
+            if (listaAdoptantes[i] != null){
+                cbAdoptanteSoli.addItem(listaAdoptantes[i].getDpi() + " - " + listaAdoptantes[i].getNombre());
+            }
+        }
+
+        Animal[] listaAnimales = controlador.getListaAnimales();
+        int totalAnimales = controlador.getContador();
+        for(int i = 0; i < totalAnimales; i++){
+            if(listaAnimales[i] != null && listaAnimales[i].getEstado().equalsIgnoreCase("Disponible")){
+                cbAnimalSoli.addItem(listaAnimales[i].getCodigo() + " - " + listaAnimales[i].getNombre());
+            }
+        }
+    }
+    private void limpiarCamposSolicitudes(){
+    txtFechaSoli.setText("");
+    if(cbAdoptanteSoli.getItemCount() > 0) cbAdoptanteSoli.setSelectedIndex(0);
+    if(cbAnimalSoli.getItemCount() > 0) cbAnimalSoli.setSelectedIndex(0);
+    jTable3.clearSelection();
+}
+    
+    private void componentesAdoptantes(){
         String[] columnas = {"DPI", "Nombre", "Teléfono", "Dirección"};
         DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
             @Override
@@ -42,7 +156,7 @@ public class Admin extends javax.swing.JFrame {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int fila =  jTable2.getSelectedRow();
-                if (fila != -1) {
+                if(fila != -1){
                     txtDPI.setText( jTable2.getValueAt(fila, 0).toString());
                     txtNombreAd.setText( jTable2.getValueAt(fila, 1).toString());
                     txtTelefonoAd.setText( jTable2.getValueAt(fila, 2).toString());
@@ -55,7 +169,7 @@ public class Admin extends javax.swing.JFrame {
         actualizarTablaAdoptantes();
     }
 
-    private void actualizarTablaAdoptantes() {
+    private void actualizarTablaAdoptantes(){
         DefaultTableModel modelo = (DefaultTableModel)  jTable2.getModel();
         modelo.setRowCount(0);
 
@@ -75,7 +189,7 @@ public class Admin extends javax.swing.JFrame {
         }
     }
 
-    private void limpiarCamposAdoptante() {
+    private void limpiarCamposAdoptante(){
         txtDPI.setText("");
         txtNombreAd.setText("");
         txtTelefonoAd.setText("");
@@ -85,7 +199,7 @@ public class Admin extends javax.swing.JFrame {
     }
     
     
-    private void componentesPersonalizados() {
+    private void componentesPersonalizados(){
        
         cbEspecie.setModel(new DefaultComboBoxModel<>(new String[]{"Perro", "Gato", "Ocelote"}));
         cbEstado.setModel(new DefaultComboBoxModel<>(new String[]{"Disponible", "En Tratamiento", "Adoptado"}));
@@ -94,16 +208,16 @@ public class Admin extends javax.swing.JFrame {
         String[] columnas = {"Código", "Nombre", "Especie", "Estado"};
         DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
+            public boolean isCellEditable(int row, int column){
                 return false;
             }
         };
         jTable1.setModel(modelo);
 
         
-        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter(){
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            public void mouseClicked(java.awt.event.MouseEvent evt){
                 tblAnimalesMouseClicked(evt);
             }
         });
@@ -111,14 +225,14 @@ public class Admin extends javax.swing.JFrame {
         actualizarTabla();
     }
     
-    private void actualizarTabla() {
+    private void actualizarTabla(){
         DefaultTableModel modelo = (DefaultTableModel) jTable1.getModel();
         modelo.setRowCount(0); 
 
         Animal[] arreglo = controlador.getListaAnimales();
-        for (Animal animal : arreglo) {
+        for(Animal animal : arreglo){
         
-            if (animal != null && animal.isActivo()) {
+            if(animal != null && animal.isActivo()){
                 Object[] fila = {
                     animal.getCodigo(),
                     animal.getNombre(),
@@ -129,7 +243,7 @@ public class Admin extends javax.swing.JFrame {
             }
         }
     }
-    private void limpiarCampos() {
+    private void limpiarCampos(){
         txtCodigo.setText("");
         txtNombre.setText("");
         cbEspecie.setSelectedIndex(0);
@@ -137,7 +251,7 @@ public class Admin extends javax.swing.JFrame {
         txtCodigo.setEditable(true);
     }
     
-    private void tblAnimalesMouseClicked(java.awt.event.MouseEvent evt) {
+    private void tblAnimalesMouseClicked(java.awt.event.MouseEvent evt){
         int fila = jTable1.getSelectedRow();
         if (fila != -1) {
             txtCodigo.setText(jTable1.getValueAt(fila, 0).toString());
@@ -147,7 +261,71 @@ public class Admin extends javax.swing.JFrame {
             txtCodigo.setEditable(false);
         }
     }
+public void generarReporteUsuariosHTML() {
+    StringBuilder html = new StringBuilder();
+    
+    java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    String fechaHoraActual = java.time.LocalDateTime.now().format(dtf);
 
+    html.append("<!DOCTYPE html>\n")
+        .append("<html lang=\"es\">\n")
+        .append("<head>\n")
+        .append("    <meta charset=\"UTF-8\">\n")
+        .append("    <title>Reporte de usuarios</title>\n")
+        .append("    <style>\n")
+        .append("        body { font-family: Arial, sans-serif; margin: 40px; color: #000; background-color: #fff; }\n")
+        .append("        h1 { font-size: 28px; margin-bottom: 5px; }\n")
+        .append("        p { font-size: 16px; margin-top: 5px; margin-bottom: 20px; }\n")
+        .append("        table { width: 40%; border-collapse: collapse; margin-bottom: 20px; }\n")
+        .append("        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; font-size: 15px; }\n")
+        .append("        th { background-color: #f9f9f9; }\n")
+        .append("        .total { font-size: 16px; font-weight: normal; margin-top: 15px; }\n")
+        .append("    </style>\n")
+        .append("</head>\n")
+        .append("<body>\n")
+        .append("    <h1>Reporte de usuarios</h1>\n")
+        .append("    <p>Generado: " + fechaHoraActual + "</p>\n")
+        .append("    <table>\n")
+        .append("        <tr>\n")
+        .append("            <th>Codigo</th>\n")
+        .append("            <th>Usuario</th>\n")
+        .append("            <th>Rol</th>\n")
+        .append("        </tr>\n");
+
+    com.mycompany.proyecto1s2.models.Usuario[] listaUsuarios = controladorUsaurio.getUsuarios();
+    int totalUsuarios = 0;
+
+    for (com.mycompany.proyecto1s2.models.Usuario u : listaUsuarios) {
+        if (u != null) {
+            totalUsuarios++;
+            html.append("        <tr>\n")
+                .append("            <td>").append(u.getCodigo()).append("</td>\n")
+                .append("            <td>").append(u.getUsuario()).append("</td>\n")
+                .append("            <td>").append(u.getRol()).append("</td>\n")
+                .append("        </tr>\n");
+        }
+    }
+
+    html.append("    </table>\n")
+        .append("    <div class=\"total\">Total de usuarios: " + totalUsuarios + "</div>\n")
+        .append("</body>\n")
+        .append("</html>");
+
+    String nombreArchivo = "reporte_usuarios.html";
+    try (java.io.FileWriter writer = new java.io.FileWriter(nombreArchivo)) {
+        writer.write(html.toString());
+        
+        if (java.awt.Desktop.isDesktopSupported()) {
+            java.awt.Desktop.getDesktop().browse(new java.io.File(nombreArchivo).toURI());
+        }
+        
+    } catch (java.io.IOException e) {
+        javax.swing.JOptionPane.showMessageDialog(this, 
+            "Error al generar el reporte: " + e.getMessage(), 
+            "Error", 
+            javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -197,22 +375,26 @@ public class Admin extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        cbAdoptante = new javax.swing.JComboBox<>();
+        cbAdoptanteSoli = new javax.swing.JComboBox<>();
         jLabel10 = new javax.swing.JLabel();
-        cbAnimal = new javax.swing.JComboBox<>();
+        cbAnimalSoli = new javax.swing.JComboBox<>();
         jLabel11 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        txtFechaSoli = new javax.swing.JTextField();
+        btnRegistrarAdoptante = new javax.swing.JButton();
+        btnAprobarAdoptante = new javax.swing.JButton();
+        btnRechazarAdoptante = new javax.swing.JButton();
+        btnLimpiarAdoptante = new javax.swing.JButton();
         jPanel10 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
         jPanel4 = new javax.swing.JPanel();
+        pnlMapaCeldas = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
+        GenerarReporet = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jTabbedPane2.addChangeListener(this::jTabbedPane2StateChanged);
 
         jLabel1.setText("Codigo");
 
@@ -301,7 +483,7 @@ public class Admin extends javax.swing.JFrame {
                         .addComponent(btnEliminar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnLimpiar)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
                 .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -443,7 +625,7 @@ public class Admin extends javax.swing.JFrame {
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                .addContainerGap(34, Short.MAX_VALUE)
+                .addContainerGap(19, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(23, 23, 23))
         );
@@ -482,7 +664,7 @@ public class Admin extends javax.swing.JFrame {
         jPanel8.setLayout(jPanel8Layout);
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 802, Short.MAX_VALUE)
+            .addGap(0, 787, Short.MAX_VALUE)
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -493,25 +675,25 @@ public class Admin extends javax.swing.JFrame {
 
         jLabel9.setText("Adoptante");
 
-        cbAdoptante.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbAdoptanteSoli.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel10.setText("Animal");
 
-        cbAnimal.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbAnimalSoli.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel11.setText("Fecha");
 
-        jButton1.setText("Registrar");
-        jButton1.addActionListener(this::jButton1ActionPerformed);
+        btnRegistrarAdoptante.setText("Registrar");
+        btnRegistrarAdoptante.addActionListener(this::btnRegistrarAdoptanteActionPerformed);
 
-        jButton2.setText("Aprobar");
-        jButton2.addActionListener(this::jButton2ActionPerformed);
+        btnAprobarAdoptante.setText("Aprobar");
+        btnAprobarAdoptante.addActionListener(this::btnAprobarAdoptanteActionPerformed);
 
-        jButton3.setText("Rechazar");
-        jButton3.addActionListener(this::jButton3ActionPerformed);
+        btnRechazarAdoptante.setText("Rechazar");
+        btnRechazarAdoptante.addActionListener(this::btnRechazarAdoptanteActionPerformed);
 
-        jButton4.setText("Limpiar");
-        jButton4.addActionListener(this::jButton4ActionPerformed);
+        btnLimpiarAdoptante.setText("Limpiar");
+        btnLimpiarAdoptante.addActionListener(this::btnLimpiarAdoptanteActionPerformed);
 
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
@@ -521,19 +703,19 @@ public class Admin extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel9)
-                    .addComponent(cbAdoptante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbAdoptanteSoli, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbAnimal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbAnimalSoli, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtFechaSoli, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(btnRegistrarAdoptante)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2))
+                        .addComponent(btnAprobarAdoptante))
                     .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(jButton3)
+                        .addComponent(btnRechazarAdoptante)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton4)))
+                        .addComponent(btnLimpiarAdoptante)))
                 .addContainerGap(105, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
@@ -542,23 +724,23 @@ public class Admin extends javax.swing.JFrame {
                 .addGap(23, 23, 23)
                 .addComponent(jLabel9)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbAdoptante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cbAdoptanteSoli, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel10)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbAnimal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cbAnimalSoli, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel11)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtFechaSoli, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(btnRegistrarAdoptante)
+                    .addComponent(btnAprobarAdoptante))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4))
+                    .addComponent(btnRechazarAdoptante)
+                    .addComponent(btnLimpiarAdoptante))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -566,7 +748,7 @@ public class Admin extends javax.swing.JFrame {
         jPanel10.setLayout(jPanel10Layout);
         jPanel10Layout.setHorizontalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 15, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -581,7 +763,7 @@ public class Admin extends javax.swing.JFrame {
                 {null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "No. Solicitud", "Solicitante", "Animal", "Fecha"
             }
         ));
         jScrollPane3.setViewportView(jTable3);
@@ -615,28 +797,53 @@ public class Admin extends javax.swing.JFrame {
 
         jTabbedPane2.addTab("Solicitudes", jPanel3);
 
+        javax.swing.GroupLayout pnlMapaCeldasLayout = new javax.swing.GroupLayout(pnlMapaCeldas);
+        pnlMapaCeldas.setLayout(pnlMapaCeldasLayout);
+        pnlMapaCeldasLayout.setHorizontalGroup(
+            pnlMapaCeldasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 781, Short.MAX_VALUE)
+        );
+        pnlMapaCeldasLayout.setVerticalGroup(
+            pnlMapaCeldasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 442, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 802, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pnlMapaCeldas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 454, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pnlMapaCeldas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jTabbedPane2.addTab("Mapa", jPanel4);
+
+        GenerarReporet.setText("Generar Reporte");
+        GenerarReporet.addActionListener(this::GenerarReporetActionPerformed);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 802, Short.MAX_VALUE)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(335, 335, 335)
+                .addComponent(GenerarReporet)
+                .addContainerGap(337, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 454, Short.MAX_VALUE)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(204, 204, 204)
+                .addComponent(GenerarReporet)
+                .addContainerGap(227, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Reporte", jPanel5);
@@ -645,7 +852,10 @@ public class Admin extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane2)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jTabbedPane2)
+                .addGap(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -665,10 +875,10 @@ public class Admin extends javax.swing.JFrame {
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
         // TODO add your handling code here:
-        try {
+        try{
             
             int codigo = Integer.parseInt(txtCodigo.getText().trim());
-            if (codigo < 0){
+            if(codigo < 0){
                 JOptionPane.showMessageDialog(this, "El código debe ser un numero entero positivo");
                 return;
             }
@@ -677,20 +887,20 @@ public class Admin extends javax.swing.JFrame {
             String especie = cbEspecie.getSelectedItem().toString();
             String estado = cbEstado.getSelectedItem().toString();
 
-            if (nombre.isEmpty()){
+            if(nombre.isEmpty()){
                 JOptionPane.showMessageDialog(this, "El nombre no puede estar vacío.");
                 return;
             }
             
         boolean exito = controlador.agregar(codigo, nombre, especie, estado);
-        if (exito){
+        if(exito){
             JOptionPane.showMessageDialog(this, "Animal agregado con éxito.");
             actualizarTabla();
             limpiarCampos();
-        } else {
+        } else{
             JOptionPane.showMessageDialog(this, "No se pudo agregar (Código existente o lista llena).");
         }
-    } catch (NumberFormatException e){
+    } catch(NumberFormatException e){
         JOptionPane.showMessageDialog(this, "El código debe ser un número entero válido.", "Error de tipo", JOptionPane.ERROR_MESSAGE);
     }
       
@@ -700,25 +910,25 @@ public class Admin extends javax.swing.JFrame {
         // TODO add your handling code here:
    String textoCodigo = txtCodigo.getText().trim();
     
-    if (textoCodigo.isEmpty()) {
+    if(textoCodigo.isEmpty()){
         JOptionPane.showMessageDialog(this, "Ingrese el Código para buscar.", "Atención", JOptionPane.INFORMATION_MESSAGE);
         return;
     }
 
-    try {
+    try{
         int codigo = Integer.parseInt(textoCodigo);
         
         Animal a = controlador.buscar(codigo);
-        if (a != null) {
+        if(a != null){
             txtNombre.setText(a.getNombre());
             cbEspecie.setSelectedItem(a.getEspecie());
             cbEstado.setSelectedItem(a.getEstado());
             txtCodigo.setEditable(false);
             
-        } else {
+        }else{
             JOptionPane.showMessageDialog(this, "Animal no encontrado o dado de baja.", "Búsqueda",JOptionPane.WARNING_MESSAGE);
         }
-    } catch (NumberFormatException e) {
+    } catch(NumberFormatException e){
         JOptionPane.showMessageDialog(this, "El código ingresado debe ser un número entero válido.", "Error de entrada", JOptionPane.ERROR_MESSAGE);
     }
     }//GEN-LAST:event_btnBuscarActionPerformed
@@ -727,12 +937,12 @@ public class Admin extends javax.swing.JFrame {
         // TODO add your handling code here:
  String textoCodigo = txtCodigo.getText().trim();
     
-    if (textoCodigo.isEmpty()) {
+    if(textoCodigo.isEmpty()){
         JOptionPane.showMessageDialog(this, "Ingrese o seleccione el Código a eliminar.", "Atención", JOptionPane.WARNING_MESSAGE);
         return;
     }
 
-    try {
+    try{
         int codigo = Integer.parseInt(textoCodigo);
 
         int op = JOptionPane.showConfirmDialog(
@@ -742,9 +952,9 @@ public class Admin extends javax.swing.JFrame {
             JOptionPane.YES_NO_OPTION
         );
 
-        if (op == JOptionPane.YES_OPTION) {
+        if(op == JOptionPane.YES_OPTION){
             boolean exito = controlador.eliminarLogico(codigo);
-            if (exito) {
+            if(exito) {
                 JOptionPane.showMessageDialog(this, "Registro eliminado lógicamente con éxito.");
                 actualizarTabla();
                 limpiarCampos();
@@ -752,7 +962,7 @@ public class Admin extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "No se encontró ningún registro activo con ese código.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
-    } catch (NumberFormatException e) {
+    } catch(NumberFormatException e){
         JOptionPane.showMessageDialog(this, "El código debe ser un número entero válido.", "Error de entrada", JOptionPane.ERROR_MESSAGE);
     }
     }//GEN-LAST:event_btnEliminarActionPerformed
@@ -762,12 +972,12 @@ public class Admin extends javax.swing.JFrame {
 String textoCodigo = txtCodigo.getText().trim();
     String nombre = txtNombre.getText().trim();
 
-    if (textoCodigo.isEmpty() || nombre.isEmpty()) {
+    if(textoCodigo.isEmpty() || nombre.isEmpty()){
         JOptionPane.showMessageDialog(this, "Debe ingresar el Código y el Nombre para modificar.", "Atención", JOptionPane.WARNING_MESSAGE);
         return;
     }
 
-    try {
+    try{
         
         int codigo = Integer.parseInt(textoCodigo);
         
@@ -777,16 +987,16 @@ String textoCodigo = txtCodigo.getText().trim();
 
         boolean exito = controlador.modificar(codigo, nombre, especie, estado);
 
-        if (exito) {
+        if(exito) {
             JOptionPane.showMessageDialog(this, "Registro actualizado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             actualizarTabla();           
             limpiarCampos();            
             txtCodigo.setEditable(true);
-        } else {
+        }else {
             JOptionPane.showMessageDialog(this, "No se encontró ningún animal activo con el código " + codigo + ".", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
-    } catch (NumberFormatException e) {
+    }catch (NumberFormatException e){
         JOptionPane.showMessageDialog(this, "El código debe ser un número entero válido.", "Error de entrada", JOptionPane.ERROR_MESSAGE);
     }
     }//GEN-LAST:event_BtnModificarActionPerformed
@@ -807,26 +1017,26 @@ String textoCodigo = txtCodigo.getText().trim();
     String telTxt = txtTelefonoAd.getText().trim();
     String direccion = txtDireccionAd.getText().trim();
 
-    if (dpiTxt.isEmpty() || nombre.isEmpty() || telTxt.isEmpty() || direccion.isEmpty()) {
+    if(dpiTxt.isEmpty() || nombre.isEmpty() || telTxt.isEmpty() || direccion.isEmpty()){
         JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Atención", JOptionPane.WARNING_MESSAGE);
         return;
     }
 
-    try {
+    try{
         long dpi = Long.parseLong(dpiTxt);
         int telefono = Integer.parseInt(telTxt);
 
-        if (dpi <= 0 || telefono <= 0) {
+        if (dpi <= 0 || telefono <= 0){
             JOptionPane.showMessageDialog(this, "El DPI y teléfono deben ser valores positivos.", "Atención", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         boolean exito = controladorAdoptante.agregar(dpi, nombre, telefono, direccion);
-        if (exito) {
+        if(exito){
             JOptionPane.showMessageDialog(this, "Adoptante registrado correctamente.");
             actualizarTablaAdoptantes();
             limpiarCamposAdoptante();
-        } else {
+        } else{
             JOptionPane.showMessageDialog(this, "El DPI ya se encuentra registrado o la lista está llena.", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
@@ -838,23 +1048,23 @@ String textoCodigo = txtCodigo.getText().trim();
     private void btnBuscar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscar2ActionPerformed
         // TODO add your handling code here:
         String dpiTxt = txtDPI.getText().trim();
-        if (dpiTxt.isEmpty()) {
+        if(dpiTxt.isEmpty()){
             JOptionPane.showMessageDialog(this, "Ingrese el DPI para buscar.", "Atención", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        try {
+        try{
             long dpi = Long.parseLong(dpiTxt);
             Adoptante a = controladorAdoptante.buscar(dpi);
-            if (a != null) {
+            if (a != null){
                 txtNombreAd.setText(a.getNombre());
                 txtTelefonoAd.setText(String.valueOf(a.getTelefono()));
                 txtDireccionAd.setText(a.getDireccion());
                 txtDPI.setEditable(false);
-            } else {
+            }else{
                 JOptionPane.showMessageDialog(this, "Adoptante no encontrado o inactivo.", "Búsqueda", JOptionPane.WARNING_MESSAGE);
             }
-        } catch (NumberFormatException e) {
+        } catch(NumberFormatException e){
             JOptionPane.showMessageDialog(this, "El DPI debe ser un número entero válido.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnBuscar2ActionPerformed
@@ -866,24 +1076,24 @@ String textoCodigo = txtCodigo.getText().trim();
     String telTxt = txtTelefonoAd.getText().trim();
     String direccion = txtDireccionAd.getText().trim();
 
-    if (dpiTxt.isEmpty() || nombre.isEmpty() || telTxt.isEmpty() || direccion.isEmpty()) {
+    if(dpiTxt.isEmpty() || nombre.isEmpty() || telTxt.isEmpty() || direccion.isEmpty()){
         JOptionPane.showMessageDialog(this, "Debe seleccionar un registro y completar todos los campos.", "Atención", JOptionPane.WARNING_MESSAGE);
         return;
     }
 
-    try {
+    try{
         long dpi = Long.parseLong(dpiTxt);
         int telefono = Integer.parseInt(telTxt);
 
         boolean exito = controladorAdoptante.modificar(dpi, nombre, telefono, direccion);
-        if (exito) {
+        if (exito){
             JOptionPane.showMessageDialog(this, "Adoptante actualizado con éxito.");
             actualizarTablaAdoptantes();
             limpiarCamposAdoptante();
-        } else {
+        } else{
             JOptionPane.showMessageDialog(this, "No se encontró un adoptante activo con ese DPI.", "Error", JOptionPane.ERROR_MESSAGE);
         }
-    } catch (NumberFormatException e) {
+    } catch(NumberFormatException e){
         JOptionPane.showMessageDialog(this, "Verifique los datos numéricos ingresados.", "Error", JOptionPane.ERROR_MESSAGE);
     }
     }//GEN-LAST:event_btnModificar2ActionPerformed
@@ -891,7 +1101,7 @@ String textoCodigo = txtCodigo.getText().trim();
     private void btnEliminar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminar2ActionPerformed
         // TODO add your handling code here:
         String dpiTxt = txtDPI.getText().trim();
-        if (dpiTxt.isEmpty()) {
+        if(dpiTxt.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Seleccione o ingrese el DPI a eliminar.", "Atención", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -900,17 +1110,17 @@ String textoCodigo = txtCodigo.getText().trim();
             long dpi = Long.parseLong(dpiTxt);
             int op = JOptionPane.showConfirmDialog(this, "¿Desea dar de baja al adoptante con DPI: " + dpi + "?", "Baja Lógica", JOptionPane.YES_NO_OPTION);
 
-            if (op == JOptionPane.YES_OPTION) {
+            if(op == JOptionPane.YES_OPTION) {
                 boolean exito = controladorAdoptante.eliminarLogico(dpi);
-                if (exito) {
+                if (exito){
                     JOptionPane.showMessageDialog(this, "Adoptante dado de baja exitosamente.");
                     actualizarTablaAdoptantes();
                     limpiarCamposAdoptante();
-                } else {
+                } else{
                     JOptionPane.showMessageDialog(this, "No se encontró un adoptante activo con ese DPI.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        } catch (NumberFormatException e) {
+        } catch(NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "El DPI debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnEliminar2ActionPerformed
@@ -920,21 +1130,96 @@ String textoCodigo = txtCodigo.getText().trim();
         limpiarCamposAdoptante();
     }//GEN-LAST:event_btnLimpiar2ActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnRegistrarAdoptanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarAdoptanteActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+        if(cbAdoptanteSoli.getItemCount() == 0 || cbAnimalSoli.getItemCount() == 0){
+        JOptionPane.showMessageDialog(this, "Debe haber adoptantes y animales disponibles.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+        
+    String dpiAdoptante = cbAdoptanteSoli.getSelectedItem().toString();
+    String codigoAnimal = cbAnimalSoli.getSelectedItem().toString();
+    String fecha = txtFechaSoli.getText().trim();
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+    if(fecha.isEmpty()){
+        JOptionPane.showMessageDialog(this, "Debe ingresar una fecha.", "Campo Vacío", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
+    String id = "SOL-" + (controladorSolicitud.getContador() + 1);
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    Solicitud nueva = new Solicitud(id, dpiAdoptante, codigoAnimal, fecha, "PENDIENTE");
+
+    if(controladorSolicitud.agregarSolicitud(nueva)){
+        JOptionPane.showMessageDialog(this, "Solicitud " + id + " registrada con éxito.");
+        actualizarTablaSolicitudes();
+        limpiarCamposSolicitudes();
+    } else{
+        JOptionPane.showMessageDialog(this, "No se pudo registrar la solicitud. El arreglo está lleno.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+    }//GEN-LAST:event_btnRegistrarAdoptanteActionPerformed
+
+    private void btnAprobarAdoptanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAprobarAdoptanteActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton4ActionPerformed
+        
+        int fila = jTable3.getSelectedRow();
+
+        if(fila >= 0){
+        String idSolicitud = jTable3.getValueAt(fila, 0).toString();
+        Solicitud solicitud = controladorSolicitud.buscarPorId(idSolicitud);
+
+            if(solicitud != null){
+                boolean solicitudAprobada = controladorSolicitud.cambiarEstado(idSolicitud, "APROBADA");
+                boolean animalActualizado = controlador.cambiarEstadoAnimal(solicitud.getCodigoAnimal(), "Adoptado");
+                if(solicitudAprobada && animalActualizado){
+                    controladorSolicitud.rechazarOtrasSolicitudes(solicitud.getCodigoAnimal(), idSolicitud);
+                    JOptionPane.showMessageDialog(this, "Solicitud " + idSolicitud + " aprobada.\n" +
+                    "El animal ha sido Adoptado.");
+
+                    actualizarTablaSolicitudes();
+                    cargarCombosSolicitud();
+                    actualizarTabla();
+                }else{
+                    JOptionPane.showMessageDialog(this, "Se aprobó la solicitud, pero hubo un problema al actualizar los datos.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        }else{
+        JOptionPane.showMessageDialog(this, "Seleccione una fila de la tabla de solicitudes.", "Atención", JOptionPane.WARNING_MESSAGE);
+        }
+
+    }//GEN-LAST:event_btnAprobarAdoptanteActionPerformed
+
+    private void btnRechazarAdoptanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRechazarAdoptanteActionPerformed
+        // TODO add your handling code here:
+        int fila = jTable3.getSelectedRow();
+
+    if (fila >= 0){
+        String id = jTable3.getValueAt(fila, 0).toString();
+        if (controladorSolicitud.cambiarEstado(id, "RECHAZADA")){
+            JOptionPane.showMessageDialog(this, "Solicitud " + id + " rechazada.");
+            actualizarTablaSolicitudes();
+        } else{
+            JOptionPane.showMessageDialog(this, "No se pudo cambiar el estado de la solicitud.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    } else{
+        JOptionPane.showMessageDialog(this, "Seleccione una fila de la tabla de solicitudes.", "Atención", JOptionPane.WARNING_MESSAGE);
+    }
+    }//GEN-LAST:event_btnRechazarAdoptanteActionPerformed
+
+    private void btnLimpiarAdoptanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarAdoptanteActionPerformed
+        // TODO add your handling code here:]\
+         limpiarCamposSolicitudes();
+    }//GEN-LAST:event_btnLimpiarAdoptanteActionPerformed
+
+    private void jTabbedPane2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane2StateChanged
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_jTabbedPane2StateChanged
+
+    private void GenerarReporetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GenerarReporetActionPerformed
+        // TODO add your handling code here:
+        generarReporteUsuariosHTML();
+    }//GEN-LAST:event_GenerarReporetActionPerformed
 
     /**
      * @param args the command line arguments
@@ -963,23 +1248,24 @@ String textoCodigo = txtCodigo.getText().trim();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnModificar;
+    private javax.swing.JButton GenerarReporet;
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnAgregar2;
+    private javax.swing.JButton btnAprobarAdoptante;
     private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnBuscar2;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnEliminar2;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnLimpiar2;
+    private javax.swing.JButton btnLimpiarAdoptante;
     private javax.swing.JButton btnModificar2;
-    private javax.swing.JComboBox<String> cbAdoptante;
-    private javax.swing.JComboBox<String> cbAnimal;
+    private javax.swing.JButton btnRechazarAdoptante;
+    private javax.swing.JButton btnRegistrarAdoptante;
+    private javax.swing.JComboBox<String> cbAdoptanteSoli;
+    private javax.swing.JComboBox<String> cbAnimalSoli;
     private javax.swing.JComboBox<String> cbEspecie;
     private javax.swing.JComboBox<String> cbEstado;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1009,10 +1295,11 @@ String textoCodigo = txtCodigo.getText().trim();
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
     private javax.swing.JTable jTable3;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JPanel pnlMapaCeldas;
     private javax.swing.JTextField txtCodigo;
     private javax.swing.JTextField txtDPI;
     private javax.swing.JTextField txtDireccionAd;
+    private javax.swing.JTextField txtFechaSoli;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtNombreAd;
     private javax.swing.JTextField txtTelefonoAd;
