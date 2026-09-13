@@ -22,6 +22,9 @@ public class AnimalController {
         if (buscar(codigo) != null){
             return false;
         }
+        if (codigo<0){
+           return false; 
+        }
 
         if (contador >= listaAnimales.length){
             return false;

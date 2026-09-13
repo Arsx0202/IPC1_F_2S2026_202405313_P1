@@ -130,7 +130,7 @@ public class Login extends javax.swing.JFrame {
             return;
         }
        Usuario usuarioLogueado = controller.autenticar(usuario, password);
-       
+      
        if(usuarioLogueado != null){
            JOptionPane.showMessageDialog(this, "Bienvenido "+ usuarioLogueado.getUsuario());
            this.setVisible(false);
@@ -141,7 +141,7 @@ public class Login extends javax.swing.JFrame {
        if("Auxiliar".equalsIgnoreCase(usuarioLogueado.getRol())){
            
        }else{
-           
+        
        }
        
      }
